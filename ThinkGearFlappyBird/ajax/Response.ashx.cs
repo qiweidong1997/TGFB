@@ -66,7 +66,7 @@ namespace ThinkGearFlappyBird.ajax
 
             /* Attempt to connect the connection ID handle to serial port "COM5" */
             //string comPortName = "\\\\.\\COM40";
-            string comPortName = "\\\\.\\COM10";
+            string comPortName = "\\\\.\\COM1";
             //Method TG_Connect
             errCode = NativeThinkgear.TG_Connect(connectionID,
                           comPortName,
@@ -129,127 +129,142 @@ namespace ThinkGearFlappyBird.ajax
 
             } /* end "Read 10 Packets of data from connection..." */
 
-            //Code for parsing a packet and with C# IO
-            string winDir = System.Environment.GetEnvironmentVariable("windir");
+            
+            /*
+             * 尝试先用上面的code测试，因为他们看起来更靠谱一点点
+             * /
+            ////Code for parsing a packet and with C# IO
+            //string winDir = System.Environment.GetEnvironmentVariable("windir");
 
-            //In the original c file in http://developer.neurosky.com/docs/doku.php?id=thinkgear_communications_protocol#datarow_format
-            //It used to be in the main method
-            int checksum = 0;
-            char[] payload = new char[256]; //(?)
-            char[] pLength = new char[1];
-            char[] c = new char[1];
-            char i;
+            ////In the original c file in http://developer.neurosky.com/docs/doku.php?id=thinkgear_communications_protocol#datarow_format
+            ////It used to be in the main method
+            //int checksum = 0;
+            //char[] payload = new char[256]; //(?)
+            //char[] pLength = new char[1];
+            //char[] c = new char[1];
+            //char i;
 
-            //open the serial data stream
-            StreamReader reader = new StreamReader("COM10");
+            ////open the serial data stream
+            //StreamReader reader = new StreamReader("COM10");
 
-            while (true)
-            {
-                /* Synchronize on [SYNC] bytes */
-                reader.Read(c, 1, 1);
-                UInt32 cval = 0;
-                cval = (UInt32)Char.GetNumericValue(c[1]);
-                //if(!c.Equals(SYNC))
-                if( cval != SYNC )
-                    continue;
+            //while (true)
+            //{
+            //    /* Synchronize on [SYNC] bytes */
+            //    reader.Read(c, 1, 1);
+            //    UInt32 cval = 0;
+            //    cval = (UInt32)Char.GetNumericValue(c[1]);
+            //    //if(!c.Equals(SYNC))
+            //    if( cval != SYNC )
+            //        continue;
 
-                reader.Read(c, 1, 1);
-                UInt32 cval2 = 0;
-                cval2 = (UInt32)Char.GetNumericValue(c[1]);
-                //if (!c.Equals(SYNC))
-                if( cval2 != SYNC )
-                    continue;
+            //    reader.Read(c, 1, 1);
+            //    UInt32 cval2 = 0;
+            //    cval2 = (UInt32)Char.GetNumericValue(c[1]);
+            //    //if (!c.Equals(SYNC))
+            //    if( cval2 != SYNC )
+            //        continue;
 
-                /* Parse [PLENGTH] byte */
-                int pLengthVal = 0;
+            //    /* Parse [PLENGTH] byte */
+            //    int pLengthVal = 0;
 
-                while (true)
-                {
-                    reader.Read(pLength, 1, 1);
-                    pLengthVal = (int)Char.GetNumericValue(pLength[1]);
-                    //int val = int.TryParse(pLength);
-                    if (pLengthVal != 170)
-                        break;
-                }
-                if (pLengthVal > 169)
-                    continue;
+            //    while (true)
+            //    {
+            //        reader.Read(pLength, 1, 1);
+            //        pLengthVal = (int)Char.GetNumericValue(pLength[1]);
+            //        //int val = int.TryParse(pLength);
+            //        if (pLengthVal != 170)
+            //            break;
+            //    }
+            //    if (pLengthVal > 169)
+            //        continue;
 
-                /* Collect [PAYLOAD...] bytes */
-                reader.Read(payload, 1, pLengthVal);
+            //    /* Collect [PAYLOAD...] bytes */
+            //    reader.Read(payload, 1, pLengthVal);
 
-                /* Compute [PAYLOAD...] chksum */
+            //    /* Compute [PAYLOAD...] chksum */
 
-                for( int x=0; x<pLengthVal; x++)
-                {
-                    checksum = checksum + payload[x];
-                }
-                checksum &= 0xFF;
-                checksum = ~checksum & 0xFF;
+            //    for( int x=0; x<pLengthVal; x++)
+            //    {
+            //        checksum = checksum + payload[x];
+            //    }
+            //    checksum &= 0xFF;
+            //    checksum = ~checksum & 0xFF;
 
-                /* Parse [CKSUM] byte */
-                reader.Read(c, 1, 1);
+            //    /* Parse [CKSUM] byte */
+            //    reader.Read(c, 1, 1);
 
-                /* Verify [PAYLOAD...] checksum against [CKSUM] */
-                // c value 3
-                UInt32 cval3 = 0;
-                cval3 = (UInt32)Char.GetNumericValue(c[1]);
-                if (cval3 != checksum)
-                    continue;
+            //    /* Verify [PAYLOAD...] checksum against [CKSUM] */
+            //    // c value 3
+            //    UInt32 cval3 = 0;
+            //    cval3 = (UInt32)Char.GetNumericValue(c[1]);
+            //    if (cval3 != checksum)
+            //        continue;
 
-                /* Since [CKSUM] is OK, parse the Data Payload */
-                //OH MY GOD C SHARP……
-                parsePayload(payload, pLengthVal);
+            //    /* Since [CKSUM] is OK, parse the Data Payload */
+            //    //OH MY GOD C SHARP……
+            //    parsePayload(payload, pLengthVal);
 
-            }
+            //}
 
 
         }
 
-        public int parsePayload( char [] payload, int pLength)
-        {
-            //In C# the same data type for unsigned char (in C++) is byte(8 bit) or char（16b)
 
-            int bytesParsed = 0;        //used to be char
-            char code;
-            int length;
-            int extendedCodeLevel = 0;  //used to be char
-            int i;
+        /*
+         * This function parses the payload part of the mindwave input, but since I found that
+         * it might be better to simply use the function from the example codes, I decided to first
+         * put it like this and see how the function from the example codes go
+         * 解除注释的按键在右上角
+         */
+        //public int parsePayload(char[] payload, int pLength)
+        //{
+        //    //In C# the same data type for unsigned char (in C++) is byte(8 bit) or char（16b)
 
-            /* Loop until all bytes are parsed from the payload[] array... */
-            while (bytesParsed < pLength)
-            {
-                /* Parse the extendedCodeLevel, code, and length */
-                while(payload[bytesParsed] == EXCODE)
-                {
-                    extendedCodeLevel++;
-                    bytesParsed++;
-                }
+        //    int bytesParsed = 0;        //used to be char
+        //    char code;
+        //    int length;
+        //    int extendedCodeLevel = 0;  //used to be char
+        //    int i;
 
-                code = payload[bytesParsed++];
-                
-                if ((code & 0x80) == 1) //possible error for bit operation "code" is 2bytes
-                    length = payload[bytesParsed++];
-                else
-                    length = 1;
+        //    /* Loop until all bytes are parsed from the payload[] array... */
+        //    while (bytesParsed < pLength)
+        //    {
+        //        /* Parse the extendedCodeLevel, code, and length */
+        //        while (payload[bytesParsed] == EXCODE)
+        //        {
+        //            extendedCodeLevel++;
+        //            bytesParsed++;
+        //        }
 
-                /* TODO: Based on the extendedCodeLevel, code, length,
-                 * and the [CODE] Definitions Table, handle the next
-                 * "length" bytes of data from the payload as
-                 * appropriate for your application.
-                 */
-                 //POSSIBLE ERROR TODO
-                Console.WriteLine("EXCODE level: {0} CODE:0x{0:X2} length: {0}\r\n",
-                                   extendedCodeLevel, code, length);
-                Console.WriteLine("Data value(s):");
-                for( i=0; i<length; i++)
-                {
-;                    Console.WriteLine("{0:X2}", payload[bytesParsed + i] & 0xFF);
-                }
-                Console.WriteLine("\n");
-            }
-            return 0;
-        }
+        //        code = payload[bytesParsed++];
 
+        //        if ((code & 0x80) == 1) //possible error for bit operation "code" is 2bytes
+        //            length = payload[bytesParsed++];
+        //        else
+        //            length = 1;
+
+        //        /* TODO: Based on the extendedCodeLevel, code, length,
+        //         * and the [CODE] Definitions Table, handle the next
+        //         * "length" bytes of data from the payload as
+        //         * appropriate for your application.
+        //         */
+        //        //POSSIBLE ERROR TODO
+        //        Console.WriteLine("EXCODE level: {0} CODE:0x{0:X2} length: {0}\r\n",
+        //                           extendedCodeLevel, code, length);
+        //        Console.WriteLine("Data value(s):");
+        //        for (i = 0; i < length; i++)
+        //        {
+        //            ; Console.WriteLine("{0:X2}", payload[bytesParsed + i] & 0xFF);
+        //        }
+        //        Console.WriteLine("\n");
+        //    }
+        //    return 0;
+        //}
+
+
+
+        /*
+         * Forgot where this function is from, and what is it for use
         private void addListItem(string value)
         {
             this.listBox1.Items.Add(value);
@@ -258,6 +273,7 @@ namespace ThinkGearFlappyBird.ajax
             //you can use the following statement directly:
             //this.listBox1.Items.Add(value); "
         }
+        */
 
         //Disconnect method
         public void Disconnect(int connectionID)
