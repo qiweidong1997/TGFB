@@ -102,7 +102,7 @@ namespace ThinkGearFlappyBird.ajax
             //Value itself. Therefore, to parse a Data Payload, one must parse each 
             //DataRow from it until all bytes of the Data Payload have been parsed.
 
-
+            //还没写Read_Packets 或者 EnableAutoRead
 
             //Code for parsing a packet and with C# IO
             string winDir = System.Environment.GetEnvironmentVariable("windir");
