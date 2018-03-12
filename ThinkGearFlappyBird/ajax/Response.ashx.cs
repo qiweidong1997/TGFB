@@ -103,6 +103,31 @@ namespace ThinkGearFlappyBird.ajax
             //DataRow from it until all bytes of the Data Payload have been parsed.
 
             //还没写Read_Packets 或者 EnableAutoRead
+            /* Read 10 ThinkGear Packets from the connection, 1 Packet at a time */
+            int packetsRead = 0;
+            while (packetsRead < 100) //number of packets
+            {
+
+                /* Attempt to read a Packet of data from the connection */
+                errCode = NativeThinkgear.TG_ReadPackets(connectionID, 1);
+                Console.WriteLine("TG_ReadPackets returned: " + errCode);
+                /* If TG_ReadPackets() was able to read a complete Packet of data... */
+                if (errCode == 1)
+                {
+                    packetsRead++;
+
+                    /* If attention value has been updated by TG_ReadPackets()... */
+                    if (NativeThinkgear.TG_GetValueStatus(connectionID, NativeThinkgear.DataType.TG_DATA_RAW) != 0)
+                    {
+
+                        /* Get and print out the updated attention value */
+                        Console.WriteLine("New RAW value: : " + (int)NativeThinkgear.TG_GetValue(connectionID, NativeThinkgear.DataType.TG_DATA_RAW));
+
+                    } /* end "If attention value has been updated..." */
+
+                } /* end "If a Packet of data was read..." */
+
+            } /* end "Read 10 Packets of data from connection..." */
 
             //Code for parsing a packet and with C# IO
             string winDir = System.Environment.GetEnvironmentVariable("windir");
