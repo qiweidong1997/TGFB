@@ -84,7 +84,7 @@
                    url: "/ajax/Response.ashx",
                    type: "GET",               //connects Response.ashx 后端
                    success: function (result) {
-                       if (result == "1") {
+                       if (result > 50) {
                            if ("ontouchstart" in window)
                                $(document).trigger("touchstart");
                            else
@@ -92,12 +92,13 @@
                            //since triggering both touchstart and mousedown can let the bird fly,
                            //for stable reasons we use both
                        }
+                       console.log(result);
                    },
                    error: function () {
                        alert("Error!");
                    }
                })
-           }, 1000); //1000 is the time in milliseconds per calling the function()
+           }, 100); //1000 is the time in milliseconds per calling the function()
        </script>
    </body>
 </html>

@@ -21,15 +21,25 @@ namespace ThinkGearFlappyBird.ajax
     {
         public const UInt32 SYNC = 0xAA;
         public const UInt32 EXCODE = 0x55;
-
-        int tgConnection;
-        int connectionID;
+        public static Response rep = null;
+        //int tgConnection;
+        static int connectionID = -1;
+        static bool initialized = false;
 
         //Constructor
-        public Response()
+        public static Response constructor()
+        {
+            if(rep== null)
+            {
+                rep = new Response();
+                rep.initialize();
+            }
+            return rep;
+        }
+
+        void initialize()
         {
             //如果放到constructor里面会不会导致多次重新开始？
-
             //32~80 thinkgear connection
             NativeThinkgear thinkgear = new NativeThinkgear();
 
@@ -40,30 +50,30 @@ namespace ThinkGearFlappyBird.ajax
             connectionID = NativeThinkgear.TG_GetNewConnectionId();
             Console.WriteLine("Connection ID: " + connectionID);
 
-            if ( connectionID < 0)
+            if (connectionID < 0)
             {
                 Console.WriteLine("ERROR: TG_GetNewConnectionId() returned: " + connectionID);
                 return;
             }
 
             int errCode = 0;
-            /* Set/open stream (raw bytes) log file for connection */
-            errCode = NativeThinkgear.TG_SetStreamLog(connectionID, "streamLog.txt");
-            Console.WriteLine("errCode for TG_SetStreamLog : " + errCode);
-            if (errCode < 0)
-            {
-                Console.WriteLine("ERROR: TG_SetStreamLog() returned: " + errCode);
-                return;
-            }
-
-            /* Set/open data (ThinkGear values) log file for connection */
-            errCode = NativeThinkgear.TG_SetDataLog(connectionID, "dataLog.txt");
-            Console.WriteLine("errCode for TG_SetDataLog : " + errCode);
-            if (errCode < 0)
-            {
-                Console.WriteLine("ERROR: TG_SetDataLog() returned: " + errCode);
-                return;
-            }
+            ///* Set/open stream (raw bytes) log file for connection */
+            //errCode = NativeThinkgear.TG_SetStreamLog(connectionID, "streamLog.txt");
+            //Console.WriteLine("errCode for TG_SetStreamLog : " + errCode);
+            //if (errCode < 0)
+            //{
+            //    Console.WriteLine("ERROR: TG_SetStreamLog() returned: " + errCode);
+            //    return;
+            //}
+            //
+            ///* Set/open data (ThinkGear values) log file for connection */
+            //errCode = NativeThinkgear.TG_SetDataLog(connectionID, "dataLog.txt");
+            //Console.WriteLine("errCode for TG_SetDataLog : " + errCode);
+            //if (errCode < 0)
+            //{
+            //    Console.WriteLine("ERROR: TG_SetDataLog() returned: " + errCode);
+            //    return;
+            //}
 
             /* Attempt to connect the connection ID handle to serial port "COM5" */
             //string comPortName = "\\\\.\\COM40";
@@ -78,6 +88,12 @@ namespace ThinkGearFlappyBird.ajax
                 Console.WriteLine("ERROR: TG_Connect() returned: " + errCode);
                 return;
             }
+
+        }
+
+        public Response()
+        {
+            
             
         }
 
@@ -110,7 +126,7 @@ namespace ThinkGearFlappyBird.ajax
                     if (NativeThinkgear.TG_GetValueStatus(connectionID, NativeThinkgear.DataType.TG_DATA_RAW) != 0)
                     {
 
-                        packetsValue += (int)NativeThinkgear.TG_GetValue(connectionID, NativeThinkgear.DataType.TG_DATA_RAW);
+                        packetsValue += (int)NativeThinkgear.TG_GetValue(connectionID, NativeThinkgear.DataType.TG_DATA_ATTENTION);
                         /* Get and print out the updated attention value */
                         //The original sentence
                         //Console.WriteLine("New RAW value: : " + (int)NativeThinkgear.TG_GetValue(connectionID, NativeThinkgear.DataType.TG_DATA_RAW));
@@ -139,7 +155,7 @@ namespace ThinkGearFlappyBird.ajax
 
         ~Response()
         {
-            Disconnect(connectionID);
+            //Disconnect(connectionID);
         }
 
         /*
@@ -148,17 +164,20 @@ namespace ThinkGearFlappyBird.ajax
         public void ProcessRequest(HttpContext context)
         {
             context.Response.ContentType = "text/plain";
-            context.Response.Write(GetState() ? "1" : "0");
+            context.Response.Write(GetState());
             
         }
         
-        public bool GetState()
+
+        public int GetState()
         {
-            int result = readAndAverageAttentionInput(connectionID);
-            if (result > 50)
-                return true;
-            else
-                return false;
+            Response rep = Response.constructor();
+            int result = rep.readAndAverageAttentionInput(connectionID);
+            if (initialized)
+            {
+
+            }
+            return result;
         }
 
         public bool IsReusable
