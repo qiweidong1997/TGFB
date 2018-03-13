@@ -84,7 +84,7 @@
                    url: "/ajax/Response.ashx",
                    type: "GET",               //connects Response.ashx 后端
                    success: function (result) {
-                       if (result > 50) {
+                       if (result > 40) {                            //要修改的值 attention value
                            if ("ontouchstart" in window)
                                $(document).trigger("touchstart");
                            else
