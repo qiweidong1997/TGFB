@@ -13,7 +13,7 @@ using System.IO;
 namespace ThinkGearFlappyBird.ajax
 {
 
- 
+
     /// <summary>
     /// Response 的摘要说明
     /// </summary>
@@ -77,7 +77,7 @@ namespace ThinkGearFlappyBird.ajax
 
             /* Attempt to connect the connection ID handle to serial port "COM5" */
             //string comPortName = "\\\\.\\COM40";
-            string comPortName = "\\\\.\\COM10";
+            string comPortName = "\\\\.\\COM3";
             //Method TG_Connect
             errCode = NativeThinkgear.TG_Connect(connectionID,
                           comPortName,
@@ -93,8 +93,8 @@ namespace ThinkGearFlappyBird.ajax
 
         public Response()
         {
-            
-            
+
+
         }
 
         /*
@@ -165,9 +165,9 @@ namespace ThinkGearFlappyBird.ajax
         {
             context.Response.ContentType = "text/plain";
             context.Response.Write(GetState());
-            
+
         }
-        
+
 
         public int GetState()
         {
